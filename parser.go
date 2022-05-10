@@ -1510,6 +1510,8 @@ func (ps *Parser) unwrapNoscriptImages(doc *html.Node) {
 			}
 
 			dom.ReplaceChild(noscript.Parent, dom.FirstElementChild(tmpBody), prevElement)
+		} else {
+			dom.ReplaceChild(noscript.Parent, dom.FirstElementChild(tmpBody), noscript)
 		}
 	})
 }
