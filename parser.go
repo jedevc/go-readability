@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-shiori/dom"
 	"golang.org/x/net/html"
@@ -94,6 +95,7 @@ type Article struct {
 	SiteName    string
 	Image       string
 	Favicon     string
+	Date        time.Time
 }
 
 // Parser is the parser that parses the page to get the readable content.
@@ -1315,6 +1317,14 @@ func (ps *Parser) getJSONLD() (map[string]string, error) {
 		}
 	}
 
+	// Dates
+	if datePublished, isString := parsed["datePublished"].(string); isString {
+		metadata["datePublished"] = strings.TrimSpace(datePublished)
+	}
+	if dateModified, isString := parsed["dateModified"].(string); isString {
+		metadata["dateModified"] = strings.TrimSpace(dateModified)
+	}
+
 	return metadata, nil
 }
 
@@ -1390,6 +1400,14 @@ func (ps *Parser) getArticleMetadata(jsonLd map[string]string) map[string]string
 		values["description"],
 		values["twitter:description"])
 
+	// get published date
+	metadataDate := strOr(
+		jsonLd["datePublished"],
+		values["article:published_time"],
+		jsonLd["dateModified"],
+		values["article:modified_time"],
+	)
+
 	// get site name
 	metadataSiteName := strOr(jsonLd["siteName"], values["og:site_name"])
 
@@ -1416,6 +1434,7 @@ func (ps *Parser) getArticleMetadata(jsonLd map[string]string) map[string]string
 		"siteName": metadataSiteName,
 		"image":    metadataImage,
 		"favicon":  metadataFavicon,
+		"date":     metadataDate,
 	}
 }
 

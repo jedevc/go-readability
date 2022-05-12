@@ -5,6 +5,7 @@ import (
 	"io"
 	nurl "net/url"
 	"strings"
+	"time"
 
 	"github.com/go-shiori/dom"
 	"golang.org/x/net/html"
@@ -113,6 +114,11 @@ func (ps *Parser) ParseDocument(doc *html.Node, pageURL *nurl.URL) (Article, err
 	validByline := strings.ToValidUTF8(finalByline, "")
 	validExcerpt := strings.ToValidUTF8(excerpt, "")
 
+	var date time.Time
+	if raw, ok := metadata["date"]; ok && raw != "" {
+		date, _ = time.Parse(time.RFC3339, raw)
+	}
+
 	return Article{
 		Title:       validTitle,
 		Byline:      validByline,
@@ -124,5 +130,6 @@ func (ps *Parser) ParseDocument(doc *html.Node, pageURL *nurl.URL) (Article, err
 		SiteName:    metadata["siteName"],
 		Image:       metadata["image"],
 		Favicon:     metadata["favicon"],
+		Date:        date,
 	}, nil
 }
