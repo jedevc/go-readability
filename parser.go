@@ -1234,10 +1234,21 @@ func (ps *Parser) getJSONLD() (map[string]string, error) {
 	content := rxCDATA.ReplaceAllString(dom.TextContent(jsonLdElement), "")
 
 	// Decode JSON
-	var parsed map[string]interface{}
-	err := json.Unmarshal([]byte(content), &parsed)
+	var data interface{}
+	err := json.Unmarshal([]byte(content), &data)
 	if err != nil {
 		return nil, err
+	}
+	var parsed map[string]interface{}
+	switch actual := data.(type) {
+	case map[string]interface{}:
+		parsed = actual
+	case []interface{}:
+		if len(actual) > 0 {
+			if internal, ok := actual[0].(map[string]interface{}); ok {
+				parsed = internal
+			}
+		}
 	}
 
 	// Check context
